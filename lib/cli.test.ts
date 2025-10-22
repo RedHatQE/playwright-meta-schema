@@ -412,11 +412,11 @@ describe('CLI Functionality Tests', () => {
         );
         assert.ok(
           capturedOutput.some((line) =>
-            line.includes('import { createMetadataValidationHook }'),
+            line.includes('validate:metadata'),
           ),
         );
         assert.ok(
-          capturedOutput.some((line) => line.includes('test.beforeEach')),
+          capturedOutput.some((line) => line.includes('package.json')),
         );
       }
     });

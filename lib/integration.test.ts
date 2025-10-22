@@ -10,9 +10,6 @@ import {
   validateTestTags,
   validateTestAnnotations,
   validateTestMetadata,
-  createMetadataValidationHook,
-  mergeValidationConfig,
-  DEFAULT_VALIDATION_CONFIG,
 } from './index.js';
 
 describe('Validation Functions Integration Tests', () => {
@@ -218,65 +215,6 @@ describe('Validation Functions Integration Tests', () => {
     });
   });
 
-  describe('createMetadataValidationHook function', () => {
-    it('should create a function that validates metadata without failing', async () => {
-      const validationHook = createMetadataValidationHook({
-        failOnValidationError: false,
-        logWarnings: false,
-      });
-
-      const testInfo: Partial<TestInfo> = {
-        title: 'Test with invalid metadata',
-        file: 'test.spec.ts',
-        tags: ['@invalid-tag'],
-        annotations: [{ type: 'invalid-type', description: 'test' }],
-      };
-
-      // Should not throw an error even with invalid metadata
-      await assert.doesNotReject(async () => {
-        await validationHook({}, testInfo as TestInfo);
-      });
-    });
-
-    it('should create a function that fails on validation errors when configured', async () => {
-      const validationHook = createMetadataValidationHook({
-        failOnValidationError: true,
-        logWarnings: false,
-      });
-
-      const testInfo: Partial<TestInfo> = {
-        title: 'Test with invalid metadata',
-        file: 'test.spec.ts',
-        tags: ['@invalid-tag'],
-        annotations: [{ type: 'invalid-type', description: 'test' }],
-      };
-
-      // Should throw an error with invalid metadata
-      await assert.rejects(async () => {
-        await validationHook({}, testInfo as TestInfo);
-      }, /Test metadata validation failed/);
-    });
-
-    it('should not fail with valid metadata', async () => {
-      const validationHook = createMetadataValidationHook({
-        failOnValidationError: true,
-        logWarnings: false,
-      });
-
-      const testInfo: Partial<TestInfo> = {
-        title: 'Test with valid metadata',
-        file: 'test.spec.ts',
-        tags: ['@smoke'],
-        annotations: [{ type: 'importance', description: 'high' }],
-      };
-
-      // Should not throw an error with valid metadata
-      await assert.doesNotReject(async () => {
-        await validationHook({}, testInfo as TestInfo);
-      });
-    });
-  });
-
   describe('Configuration options', () => {
     it('should respect logWarnings configuration', () => {
       const testInfo: Partial<TestInfo> = {
@@ -424,71 +362,4 @@ describe('Validation Functions Integration Tests', () => {
     });
   });
 
-  describe('Utility Functions', () => {
-    it('should merge validation configurations correctly', () => {
-      const baseConfig = {
-        failOnValidationError: false,
-        logWarnings: true,
-        logger: console.warn,
-      };
-
-      const overrides = {
-        failOnValidationError: true,
-        logWarnings: false,
-      };
-
-      const result = mergeValidationConfig(baseConfig, overrides);
-
-      assert.strictEqual(result.failOnValidationError, true);
-      assert.strictEqual(result.logWarnings, false);
-      assert.strictEqual(result.logger, console.warn); // Should preserve base config value
-    });
-
-    it('should handle empty overrides', () => {
-      const baseConfig = {
-        failOnValidationError: true,
-        logWarnings: false,
-      };
-
-      const result = mergeValidationConfig(baseConfig, {});
-
-      assert.deepStrictEqual(result, baseConfig);
-    });
-
-    it('should handle partial overrides', () => {
-      const baseConfig = {
-        failOnValidationError: false,
-        logWarnings: true,
-        logger: console.warn,
-      };
-
-      const overrides = {
-        failOnValidationError: true,
-      };
-
-      const result = mergeValidationConfig(baseConfig, overrides);
-
-      assert.strictEqual(result.failOnValidationError, true);
-      assert.strictEqual(result.logWarnings, true);
-      assert.strictEqual(result.logger, console.warn);
-    });
-
-    it('should work with DEFAULT_VALIDATION_CONFIG', () => {
-      const overrides = {
-        failOnValidationError: true,
-      };
-
-      const result = mergeValidationConfig(
-        DEFAULT_VALIDATION_CONFIG,
-        overrides,
-      );
-
-      assert.strictEqual(result.failOnValidationError, true);
-      assert.strictEqual(
-        result.logWarnings,
-        DEFAULT_VALIDATION_CONFIG.logWarnings,
-      );
-      assert.strictEqual(result.logger, DEFAULT_VALIDATION_CONFIG.logger);
-    });
-  });
 });

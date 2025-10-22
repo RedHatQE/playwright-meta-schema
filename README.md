@@ -12,14 +12,14 @@ A TypeScript library that provides validation for Playwright test metadata inclu
 - ✅ **Tag Validation**: Validates Playwright test tags against predefined valid tags
 - ✅ **Annotation Validation**: Validates test annotations with type-safe descriptions
 - ✅ **TypeScript Support**: Full TypeScript support with comprehensive type definitions
-- ✅ **CLI Tool**: **Recommended for CI/CD pipelines** - Command-line interface for validation
-- ✅ **Runtime Validation**: Optional integration with Playwright's test.beforeEach hooks or auto fixtures
+- ✅ **CLI Tool**: Command-line interface for validation in CI/CD pipelines
+- ✅ **Script Execution**: Integrate validation through yarn/npm scripts
 - ✅ **Configurable**: Flexible configuration options for different environments
 - ✅ **Comprehensive Testing**: Extensive test suite with 132+ tests
 
-## Recommended Usage: CLI for CI/CD Pipelines
+## Usage: CLI for CI/CD Pipelines
 
-**⚠️ STRONGLY RECOMMENDED**: Use the CLI tool in your CI/CD linting pipelines to catch metadata validation errors early in the development process, before tests are executed.
+Use the CLI tool in your CI/CD linting pipelines to catch metadata validation errors early in the development process, before tests are executed.
 
 The CLI tool provides fast, lightweight validation that integrates seamlessly with your existing linting and code quality checks.
 
@@ -27,23 +27,11 @@ The CLI tool provides fast, lightweight validation that integrates seamlessly wi
 # Add to your CI/CD pipeline (package.json scripts)
 {
   "scripts": {
-    "lint:metadata": "playwright-meta-validator --fail-on-error",
+    "validate:metadata": "playwright-meta-validator --fail-on-error",
     "lint": "eslint . && playwright-meta-validator --fail-on-error"
   }
 }
 ```
-
-## Optional: Runtime Validation
-
-**⚠️ CAUTION**: Runtime validation using beforeEach hooks or auto-fixtures should be considered **optional supplementary tools**. They add execution overhead to your test runs and should be used judiciously.
-
-Runtime validation is best suited for:
-
-- Development environments where immediate feedback is valuable
-- Specific test suites where metadata validation is critical
-- Debugging scenarios where detailed validation logging is needed
-
-**Note**: Runtime validation will slow down your test execution as it runs validation logic before each test.
 
 ## Installation
 
@@ -54,8 +42,6 @@ yarn add playwright-meta-schema
 ```
 
 ## Quick Start
-
-### CLI Validation (Recommended for CI/CD)
 
 Add metadata validation to your CI/CD pipeline:
 
@@ -68,13 +54,15 @@ yarn add playwright-meta-schema
 # Add to package.json scripts
 {
   "scripts": {
-    "lint:metadata": "playwright-meta-validator --fail-on-error --verbose",
-    "ci:lint": "eslint . && playwright-meta-validator --fail-on-error"
+    "validate:metadata": "playwright-meta-validator --fail-on-error --verbose",
+    "lint": "eslint . && playwright-meta-validator --fail-on-error"
   }
 }
 
 # Run in your CI pipeline
-npm run lint:metadata
+npm run validate:metadata
+# or
+yarn validate:metadata
 ```
 
 ## Valid Tags
@@ -136,9 +124,7 @@ await test
   .annotate({ type: 'assignee', description: 'john.doe@example.com' });
 ```
 
-## CLI Usage (Recommended)
-
-**Use the CLI tool in your CI/CD pipelines for optimal performance and early error detection.**
+## CLI Usage
 
 ```bash
 # Basic validation (demo mode - shows examples)
@@ -159,24 +145,39 @@ npx playwright-meta-validator --config ./metadata-config.json --fail-on-error
 ```yaml
 # GitHub Actions example
 - name: Validate Playwright Metadata
-  run: npx playwright-meta-validator --fail-on-error
+  run: yarn validate:metadata
 
-# Add to package.json for npm/yarn integration
+# GitLab CI example
+lint:metadata:
+  script:
+    - yarn validate:metadata
+```
+
+### Package.json Script Integration
+
+```json
 {
   "scripts": {
-    "lint": "eslint . && playwright-meta-validator --fail-on-error",
-    "ci": "npm run lint && npm test"
+    "validate:metadata": "playwright-meta-validator --fail-on-error",
+    "lint": "eslint . && yarn validate:metadata",
+    "ci": "yarn lint && yarn test"
   }
 }
 ```
 
-## Examples
+## Example: content-sources-frontend Integration
 
-See the `examples/` directory for:
+The content-sources-frontend project demonstrates how to integrate this validation tool:
 
-- Basic usage examples
-- Integration guide for content-sources-frontend
-- Advanced configuration patterns
+```json
+{
+  "scripts": {
+    "validate:metadata": "playwright-meta-validator --fail-on-error"
+  }
+}
+```
+
+This script can be run locally during development or as part of your CI/CD pipeline to ensure all test metadata is valid before tests execute.
 
 ## Development
 
@@ -207,9 +208,16 @@ npx playwright-meta-validator --fail-on-error
 ## Recommended Workflow
 
 1. **Development**: Use CLI tool locally to validate metadata
+   ```bash
+   yarn validate:metadata
+   ```
+
 2. **CI/CD Pipeline**: Integrate CLI validation as a linting step
-3. **Runtime Validation**: Optionally add for development environments only
-4. **Performance**: Keep runtime validation minimal to avoid test execution overhead
+   ```bash
+   yarn lint  # includes validate:metadata
+   ```
+
+3. **Pre-commit Hooks**: Optionally add validation to pre-commit hooks for early feedback
 
 ## Versioning
 

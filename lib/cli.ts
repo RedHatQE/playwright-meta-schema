@@ -200,10 +200,10 @@ export async function main(): Promise<void> {
 
     console.log('\nTo use this library in your Playwright tests:');
     console.log(
-      '1. Import: import { createMetadataValidationHook } from "playwright-meta-schema"',
+      'Add a script to your package.json to run validation:',
     );
     console.log(
-      '2. Add hook: test.beforeEach(createMetadataValidationHook({ failOnValidationError: true }))',
+      '  "scripts": { "validate:metadata": "playwright-meta-validator --fail-on-error" }',
     );
 
     process.exit(success ? 0 : 1);
