@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Playwright JUnit Reporter - Main Exports
  *
@@ -7,22 +6,14 @@
  * or run as a CLI tool for validation.
  */
 
-import {
-  isValidTag,
-  areValidTags,
-  createValidTagsArray,
-  ValidTags,
-  ValidTagsArray,
-} from '../schema/tags.types.js';
-
+// Import only the items we actually use in this file's code
+import { isValidTag } from '../schema/tags.types.js';
+import { isValidAnnotation } from '../schema/annotations.types.js';
 import { TestInfo } from '@playwright/test';
-import {
-  isValidAnnotation,
-  areValidAnnotations,
-  createValidAnnotationsArray,
-  ValidAnnotation,
-  ValidAnnotationsArray,
-} from '../schema/annotations.types.js';
+
+// Import types that we use in this file's type annotations
+import type { ValidTagsArray } from '../schema/tags.types.js';
+import type { ValidAnnotationsArray } from '../schema/annotations.types.js';
 
 // Re-export schema types and functions for external use
 export {
