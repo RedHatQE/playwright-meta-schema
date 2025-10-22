@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -68,7 +70,10 @@ jobs:
   publish:
     needs: lint-and-build
     runs-on: ubuntu-latest
-    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v') && github.ref == format('refs/tags/v{0}', github.event.head_commit.message)
+    if: github.event_name == 'release' && github.event.action == 'published'
+    permissions:
+      contents: write
+      id-token: write  # Required for npm provenance
 
     steps:
       - name: Checkout code
@@ -92,40 +97,45 @@ jobs:
           echo "Package contents:"
           npm pack --dry-run
 
-      - name: Extract version from tag
+      - name: Extract version from release tag
         id: version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          # Extract version from the release tag (e.g., v1.0.0 -> 1.0.0)
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          VERSION="${TAG_NAME#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Publishing version: $VERSION"
+          echo "Publishing version: $VERSION from tag: $TAG_NAME"
 
-      - name: Verify package.json version matches tag
+      - name: Update package.json version from tag
         run: |
-          TAG_VERSION=""
-
-          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
-
-          echo $(node -p "require('./package.json').version")
+          echo "Setting package.json version to ${{ steps.version.outputs.version }}"
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version --allow-same-version
+          echo "Updated version: $(node -p "require('./package.json').version")"
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update release with npm package info
+        uses: actions/github-script@v7
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.version.outputs.version }}
-          body: |
-            ## Installation
+          script: |
+            const version = '${{ steps.version.outputs.version }}';
+            const releaseId = ${{ github.event.release.id }};
 
-            ```bash
-            npm install --dev playwright-meta-schema@${{ steps.version.outputs.version }}
-            # or
-            yarn add -D playwright-meta-schema@${{ steps.version.outputs.version }}
-            ```
-          draft: true
-          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+            // Get current release body
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId
+            });
+
+            // Append npm installation info to the release body
+            const npmInfo = '\n\n━━━\n\n## 📦 Published to npm\n\nThis version has been published to npm and can be installed with:\n\n```bash\nnpm install --save-dev playwright-meta-schema@' + version + '\n# or\nyarn add -D playwright-meta-schema@' + version + '\n```\n\n[View on npm](https://www.npmjs.com/package/playwright-meta-schema/v/' + version + ')\n';
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              body: release.body + npmInfo
+            });
