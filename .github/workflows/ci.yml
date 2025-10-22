@@ -132,8 +132,22 @@ jobs:
             });
 
             // Append npm installation info to the release body
-            const npmInfo = `\n\n---\n\n## 📦 Published to npm\n\nThis version has been published to npm and can be installed with:\n\n\`\`\`bash\nnpm install --save-dev playwright-meta-schema@${version}\n# or\nyarn add -D playwright-meta-schema@${version}\n\`\`\`\n\n[View on npm](https://www.npmjs.com/package/playwright-meta-schema/v/${version})`;
+            const npmInfo = `
 
+---
+
+## 📦 Published to npm
+
+This version has been published to npm and can be installed with:
+
+\`\`\`bash
+npm install --save-dev playwright-meta-schema@${version}
+# or
+yarn add -D playwright-meta-schema@${version}
+\`\`\`
+
+[View on npm](https://www.npmjs.com/package/playwright-meta-schema/v/${version})
+`;
             await github.rest.repos.updateRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
