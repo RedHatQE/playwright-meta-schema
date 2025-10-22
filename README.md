@@ -221,11 +221,17 @@ npx playwright-meta-validator --fail-on-error
 
 ## Versioning
 
-Semantic versioning will be used. Repository tags and GitHub release(s) will be provided.
+This project follows [Semantic Versioning](https://semver.org/). The version is determined by Git tags, not by the `package.json` version field.
 
 ## Releases
 
-Releases will be done ad-hoc, automated and executed by CI, and will be triggered by repository tagging.
+Releases are fully automated through GitHub Actions. To release a new version:
+
+1. Create a new release in GitHub with a tag in the format `vX.Y.Z` (e.g., `v1.0.0`)
+2. The CI workflow will automatically publish to npm with the version from the tag
+3. No code changes or commits are needed to update the version
+
+See [RELEASE.md](./RELEASE.md) for detailed release instructions.
 
 ## Contributing
 
